@@ -1,0 +1,807 @@
+programa HotelLihacertelJuanYMaggy;
+
+usa
+  SysUtils, Crt;
+
+constanteantes:
+  groupc = 30;
+  ninosc = 10;
+
+tipo
+  clientinf = registro
+    clname: arreglo[1..groupc] de cadena;
+    correo: arreglo[1..groupc] de cadena;
+    tlf: arreglo[1..groupc] de cadena;
+    id: arreglo[1..groupc] de cadena;
+    ninos: arreglo[1..ninosc] de cadena;
+    edad: arreglo[1..ninosc] de enteros;
+    roomnum: cadena;
+    roomtype: cadena;
+    ninoscant: enteros;
+    adultcant: enteros;
+    dias : enteros;
+  fin;
+
+  info = archivo de clientinf;
+
+variables
+  padinfo: info;
+  iadinfo: info;
+  acadinfo: info;
+  adclient: clientinf;
+  i, x: enteros;
+
+funcion arcnums(constante str: cadena): Boleano;
+variables
+  i: enteros;
+inicio
+  para i := 1 hasta Length(str) hacer
+  inicio
+    Si str[i] en ['0'..'9'] entonces
+    inicio
+      arcnums := True;
+      Exit;
+    fin;
+  fin;
+  arcnums := False;
+fin;
+
+procedimiento inicarch(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+inicio
+  Asignar(padinfo, 'Pareja.dat');
+  Asignar(iadinfo, 'Individual.dat');
+  Asignar(acadinfo, 'Grupo.dat');
+  {$I-}
+  Resetear(padinfo);
+  Resetear(iadinfo);
+  Resetear(acadinfo);
+  {$I+}
+  Si IOResult <> 0 entonces
+  inicio
+    Reimprimir(padinfo);
+    Reimprimir(iadinfo);
+    Reimprimir(acadinfo);
+  fin;
+fin;
+
+funcion avairoomnum(roomnum: cadena; variables padinfo: info; variables iadinfo: info; variables acadinfo: info): Boleano;
+variables
+  presarch: info;
+inicio
+  Asignar(presarch, 'Pareja.dat');
+  Resetear(presarch);
+  Si IOResult = 0 entonces
+  inicio
+    mientras no Ede(presarch) hacer
+    inicio
+      leer(presarch, adclient);
+      Si adclient.roomnum = roomnum entonces
+      inicio
+        Cerrar(presarch);
+        avairoomnum := True;
+        Exit;
+      fin;
+    fin;
+    Cerrar(presarch);
+  fin;
+
+  Asignar(presarch, 'Individual.dat');
+  Resetear(presarch);
+  Si IOResult = 0 entonces
+  inicio
+    mientras no Ede(presarch) hacer
+    inicio
+      leer(presarch, adclient);
+      Si adclient.roomnum = roomnum entonces
+      inicio
+        Cerrar(presarch);
+        avairoomnum := True;
+        Exit;
+      fin;
+    fin;
+    Cerrar(presarch);
+  fin;
+
+  Asignar(presarch, 'Grupo.dat');
+  Resetear(presarch);
+  Si IOResult = 0 entonces
+  inicio
+    mientras no Ede(presarch) hacer
+    inicio
+      leer(presarch, adclient);
+      Si adclient.roomnum = roomnum entonces
+      inicio
+        Cerrar(presarch);
+        avairoomnum := True;
+        Exit;
+      fin;
+    fin;
+    Cerrar(presarch);
+  fin;
+
+  avairoomnum := False;
+fin;
+
+procedimiento datahabmostrar(roomtype: cadena);
+inicio
+  caso roomtype de
+    'S':
+      inicio
+        imprimir('Habitación Sencilla:');
+        imprimir('-------------------');
+        imprimir('Esta habitación es ideal para una persona, si viene por trabajo, esta habitacion podria resultarle perfecta.');
+        
+      fin;
+    'T':
+      inicio
+        imprimir('Suite:');
+        imprimir('-------');
+        imprimir('Esta habitación es ideal para una pareja, pero podria resultar muy comoda para una persona');
+        
+      fin;
+    'D':
+      inicio
+        imprimir('Habitación hacerble Cama:');
+        imprimir('-----------------');
+        imprimir('Esta habitación es para hacers personas que desean camas separadas, ideal para compartir con compañeros de trabajo, amigos o familiares.');
+        
+      fin;
+    'F':
+      inicio
+        imprimir('Suite Familiar:');
+        imprimir('------------');
+        imprimir('Esta habitación es para familias, de amplio tamano para la comodidad de hastahacers.');
+        
+      fin;
+  fin;
+fin;
+
+procedimiento disphabsh;
+inicio
+  imprimir('Disponibilidad:');
+  imprimir('------------------------');
+  imprimir('S. Sencilla');
+  imprimir('T. Suite');
+  imprimir('D. hacerble Cama');
+  imprimir('F. Suite Familiar');
+  imprimir('------------------------');
+fin;
+
+funcion arrobarchl(correo: cadena): Boleano;
+inicio
+  arrobarchl := Pos('@', correo) > 0;
+fin;
+
+procedimiento agregarinfo(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+variables
+  adclient : clientinf;
+  hosptype: caracter;
+  roomtype: caracter;
+  roomnum: cadena;
+  adnum: enteros;
+  i, x: enteros;
+inicio
+ Si IOresult = 0 entonces
+ inicio
+    Cerrar(padinfo);
+    Cerrar(iadinfo);
+    Cerrar(acadinfo);
+ fin;
+  limpiar pantalla;
+  imprimir('//////Agregar Registro\\\\\\');
+
+  
+  repetir
+    imprimir('Ingrese el tipo de hospedaje:');
+    imprimir('I. Individual');
+    imprimir('P. Pareja');
+    imprimir('G. Grupo');
+    imprimir('Opción: ');
+    hosptype := mayuscula(leerKey);
+    imprimir(hosptype);
+  hasta (hosptype = 'I') or (hosptype = 'P') or (hosptype = 'G');
+
+  
+  Si hosptype = 'G' entonces
+  inicio
+    Asignar(acadinfo, 'Grupo.dat');
+    Resetear(acadinfo);
+    imprimir('Datos adicionales para Grupo:');
+    imprimir;
+
+    repetir
+      imprimir('¿Cantidad de adulhastas que se hospedaran? ');
+      leer(adnum);
+      adclient.adultcant := adnum;
+    hasta adnum > 0;
+
+    para i := 1 hasta adnum hacer
+    inicio
+      imprimir;
+      imprimir('Datos de la persona ', i);
+      imprimir('------------------');
+      imprimir('Cedula: ');
+      leer(adclient.id[i]);
+      imprimir('Nombre completo: ');
+      leer(adclient.clname[i]);
+      imprimir('Email: ');
+      leer(adclient.correo[i]);
+      imprimir('Numero Telefonico: ');
+      leer(adclient.tlf[i]);
+    fin;
+
+    repetir
+      imprimir;
+      imprimir('¿Cantidad de ninos que se hospedaran? ');
+      leer(x);
+      adclient.ninoscant := x;
+    hasta x >= 0;
+
+    para i := 1 hasta x hacer
+    inicio
+      imprimir;
+      imprimir('Datos del nino/a ', i);
+      imprimir('-----------------');
+      imprimir('Nombre completo: ');
+      leer(adclient.ninos[i]);
+      imprimir('Edad: ');
+      leer(adclient.edad[i]);
+    fin;
+
+    Cerrar(acadinfo);
+  fin
+  si no Si hosptype = 'P' entonces
+  inicio
+    Asignar(padinfo, 'Pareja.dat');
+    Resetear(padinfo);
+    imprimir('Datos para Pareja:');
+    imprimir;
+    imprimir('Proporcione el primer nombre completo: ');
+    leer(adclient.clname[1]);
+    imprimir('Proporcione el segunhacer nombre completo: ');
+    leer(adclient.clname[2]);
+    imprimir('Proporcione el Email de ', adclient.clname[1], ': ');
+    leer(adclient.correo[1]);
+    imprimir('Proporcione el Email de ', adclient.clname[2], ': ');
+    leer(adclient.correo[2]);
+    imprimir('Proporcione el numero telefonico de ', adclient.clname[1], ': ');
+    leer(adclient.tlf[1]);
+    imprimir('Proporcione el numero telefonico de ', adclient.clname[2], ': ');
+    leer(adclient.tlf[2]);
+    imprimir('Proporcione la cédula de ', adclient.clname[1], ': ');
+    leer(adclient.id[1]);
+    imprimir('Proporcione la cédula de ', adclient.clname[2], ': ');
+    leer(adclient.id[2]);
+
+    Cerrar(padinfo);
+  fin
+  si no
+  inicio
+    Asignar(iadinfo, 'Individual.dat');
+    Resetear(iadinfo);
+
+    
+    adclient.roomnum := '';
+    adclient.roomtype := '';
+    adclient.clname[1] := '';
+    adclient.id[1] := '';
+    adclient.correo[1] := '';
+    adclient.tlf[1] := '';
+
+    
+    repetir
+      imprimir('Cédula: ');
+      leer(adclient.id[1]);
+    hasta arcnums(adclient.id[1]);
+
+    
+    imprimir('Nombre completo: ');
+    leer(adclient.clname[1]);
+
+
+    repetir
+      imprimir('Email: ');
+      leer(adclient.correo[1]);
+    hasta arrobarchl(adclient.correo[1]);
+
+    
+    repetir
+      imprimir('Numero Telefonico: ');
+      leer(adclient.tlf[1]);
+    hasta arcnums(adclient.tlf[1]);
+
+    Cerrar(iadinfo);
+  fin;
+
+  
+  repetir
+    limpiar pantalla;
+    disphabsh;
+    imprimir('Seleccione una opción: ');
+    roomtype := mayuscula(leerKey);
+    imprimir(roomtype);
+  hasta (roomtype = 'S') or (roomtype = 'T') or (roomtype = 'D') or (roomtype = 'F');
+    imprimir('');
+    imprimir('Cuanhastas dias se desea alojarse?');
+    leer(adclient.dias);
+  
+  datahabmostrar(roomtype);
+
+  
+  repetir
+    imprimir;
+    imprimir('Inserte el numero de habitación: ');
+    leer(roomnum);
+    Si avairoomnum(roomnum, padinfo, iadinfo, acadinfo) entonces
+    inicio
+      imprimir('El numero de habitación ya esta ocupahacer. Por favor, seleccione otro.');
+      leer;
+    fin;
+  hasta no avairoomnum(roomnum, padinfo, iadinfo, acadinfo);
+
+  
+  adclient.roomnum := roomnum;
+  adclient.roomtype := roomtype;
+
+  caso hosptype de
+    'I':
+      inicio
+        Asignar(iadinfo, 'Individual.dat');
+        Resetear(iadinfo);
+        buscar(iadinfo, FileSize(iadinfo));
+        imprimir(iadinfo, adclient);
+        Cerrar(iadinfo);
+      fin;
+    'P':
+      inicio
+        Asignar(padinfo, 'Pareja.dat');
+        Resetear(padinfo);
+        buscar(padinfo, FileSize(padinfo));
+        imprimir(padinfo, adclient);
+        Cerrar(padinfo);
+      fin;
+    'A':
+      inicio
+        Asignar(acadinfo, 'Grupo.dat');
+        Resetear(acadinfo);
+        buscar(acadinfo, FileSize(acadinfo));
+        imprimir(acadinfo, adclient);
+        Cerrar(acadinfo);
+      fin;
+  fin;
+
+  imprimir;
+  imprimir('Registro agregahacer correctamente.');
+  leer;
+fin;
+
+procedimiento mostrarinfo(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+variables
+  presarch: info;
+  adclient: clientinf;
+inicio
+  Si IOresult = 0 entonces
+  inicio
+    Cerrar(padinfo);
+    Cerrar(iadinfo);
+    Cerrar(acadinfo);
+  fin;
+  limpiar pantalla;
+  imprimir('/////Mostrar Datos\\\\\');
+  imprimir('T. hastahacers');
+  imprimir('I. Individual');
+  imprimir('P. Pareja');
+  imprimir('A. Grupo');
+  imprimir('------------------------');
+  imprimir('Seleccione una opción: ');
+  caso mayuscula(leerKey) de
+    'T':
+      inicio
+        Asignar(presarch, 'Individual.dat');
+        Resetear(presarch);
+        imprimir('/////Hospedajes Individuales\\\\\');
+        mientras no Ede(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cédula: ', adclient.id[1]);
+          imprimir('Nombre y Apellihacer: ', adclient.clname[1]);
+          imprimir('correo: ', adclient.correo[1]);
+          imprimir('Teléfono: ', adclient.tlf[1]);
+          imprimir('Habitación: ', adclient.roomnum);
+          imprimir('Tipo de Habitación: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir;
+        fin;
+        Cerrar(presarch);
+
+        Asignar(presarch, 'Pareja.dat');
+        Resetear(presarch);
+        imprimir('/////Hospedajes en Pareja\\\\\');
+        mientras no Ede(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cedula: ', adclient.id[1]);
+          imprimir('Nombre completo: ', adclient.clname[1]);
+          imprimir('Email: ', adclient.correo[1]);
+          imprimir('Numero Telefonico: ', adclient.tlf[1]);
+          imprimir('Numero de Habitacion: ', adclient.roomnum);
+          imprimir('Tipo de Habitacion: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir('------------------------------');
+          imprimir('Cedula: ', adclient.id[2]);
+          imprimir('Nombre completo: ', adclient.clname[2]);
+          imprimir('Email: ', adclient.correo[2]);
+          imprimir('Telefono: ', adclient.tlf[2]);
+          imprimir('Numero de Habitacion: ', adclient.roomnum);
+          imprimir('Tipo de Habitacion: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir;
+        fin;
+        Cerrar(presarch);
+
+        Asignar(presarch, 'Grupo.dat');
+        Resetear(presarch);
+        imprimir('/////Hospedajes Grupo\\\\\');
+        mientras no Ede(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cantidad de adulhastas: ', adclient.adultcant);
+          imprimir('------------------------------');
+          para i := 1 hasta adclient.adultcant hacer
+          inicio
+            imprimir('Adulhasta ', i);
+            imprimir('Cedula: ', adclient.id[i]);
+            imprimir('Nombre completo: ', adclient.clname[i]);
+            imprimir('Email: ', adclient.correo[i]);
+            imprimir('Numero Telefonico: ', adclient.tlf[i]);
+            imprimir('Numero de Habitacion: ', adclient.roomnum);
+            imprimir('Tipo de Habitacion: ', adclient.roomtype);
+            imprimir('dias: ', adclient.dias);
+            imprimir;
+          fin;
+          imprimir('------------------------------');
+          imprimir('Cantidad de niños: ', adclient.ninoscant);
+          para i := 1 hasta adclient.ninoscant hacer
+          inicio
+            imprimir('Nino ', i);
+            imprimir('Nombre completo: ', adclient.ninos[i]);
+            imprimir('Edad: ', adclient.edad[i]);
+            imprimir;
+          fin;
+          imprimir('------------------------------');
+        fin;
+        Cerrar(presarch);
+      fin;
+    'I':
+      inicio
+        Asignar(presarch, 'Individual.dat');
+        Resetear(presarch);
+        imprimir('/////Hospedajes Individuales\\\\\');
+        mientras no Ede(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cedula: ', adclient.id[1]);
+          imprimir('Nombre completo: ', adclient.clname[1]);
+          imprimir('Email: ', adclient.correo[1]);
+          imprimir('Telefono: ', adclient.tlf[1]);
+          imprimir('Habitacion: ', adclient.roomnum);
+          imprimir('Tipo de Habitacion: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir;
+        fin;
+        Cerrar(presarch);
+      fin;
+    'P':
+      inicio
+        Asignar(presarch, 'Pareja.dat');
+        Resetear(presarch);
+        imprimir('***** Hospedajes en Pareja *****');
+        mientras no Eof(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cedula: ', adclient.id[1]);
+          imprimir('Nombre completo: ', adclient.clname[1]);
+          imprimir('Email: ', adclient.correo[1]);
+          imprimir('Numero Telefonico: ', adclient.tlf[1]);
+          imprimir('Numero de Habitacion: ', adclient.roomnum);
+          imprimir('Tipo de Habitacion: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir('------------------------------');
+          imprimir('Cedula: ', adclient.id[2]);
+          imprimir('Nombre completo: ', adclient.clname[2]);
+          imprimir('Email: ', adclient.correo[2]);
+          imprimir('Numero Telefonico: ', adclient.tlf[2]);
+          imprimir('Numero de Habitacion: ', adclient.roomnum);
+          imprimir('Tipo de Habitacion: ', adclient.roomtype);
+          imprimir('dias: ', adclient.dias);
+          imprimir;
+        fin;
+        Cerrar(presarch);
+      fin;
+    'A':
+      inicio
+        Asignar(presarch, 'Grupo.dat');
+        Resetear(presarch);
+        imprimir('***** Hospedajes Grupo *****');
+        mientras no Ede(presarch) hacer
+        inicio
+          leer(presarch, adclient);
+          imprimir('Cantidad de adulhastas: ', adclient.adultcant);
+          imprimir('------------------------------');
+          para i := 1 hasta adclient.adultcant hacer
+          inicio
+            imprimir('Adulhasta ', i);
+            imprimir('Cedula: ', adclient.id[i]);
+            imprimir('Nombre completo: ', adclient.clname[i]);
+            imprimir('Email: ', adclient.correo[i]);
+            imprimir('Numero Telefonico: ', adclient.tlf[i]);
+            imprimir('Numero de Habitacion: ', adclient.roomnum);
+            imprimir('Tipo de Habitacion: ', adclient.roomtype);
+            imprimir('dias: ', adclient.dias);
+            imprimir;
+          fin;
+          imprimir('------------------------------');
+          imprimir('Cantidad de ninos: ', adclient.ninoscant);
+          para i := 1 hasta adclient.ninoscant hacer
+          inicio
+            imprimir('Nino ', i);
+            imprimir('Nombre completo: ', adclient.ninos[i]);
+            imprimir('Edad: ', adclient.edad[i]);
+            imprimir;
+          fin;
+          imprimir('------------------------------');
+        fin;
+        Cerrar(presarch);
+      fin;
+  fin;
+fin;
+
+procedimiento buscarinfo(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+variables
+  presarch: info;
+  idBuscar: cadena;
+inicio
+ Si IOresult = 0 entonces
+ inicio
+    Cerrar(padinfo);
+    Cerrar(iadinfo);
+    Cerrar(acadinfo);
+ fin;
+  limpiar pantalla;
+  imprimir('/////Buscar Datos\\\\\');
+  imprimir('Inserte el numero de cedula: ');
+  leer(idBuscar);
+  imprimir;
+
+  Asignar(presarch, 'Individual.dat');
+  Resetear(presarch);
+  imprimir('/////Resultados de busqueda en Hospedajes Individuales\\\\\');
+  mientras no Ede(presarch) hacer
+  inicio
+    leer(presarch, adclient);
+    Si adclient.id[1] = idBuscar entonces
+    inicio
+      imprimir('Cedula: ', adclient.id[1]);
+      imprimir('Nombre completo: ', adclient.clname[1]);
+      imprimir('Email: ', adclient.correo[1]);
+      imprimir('Numero Telefonico: ', adclient.tlf[1]);
+      imprimir('Numero de Habitacion: ', adclient.roomnum);
+      imprimir('Tipo de Habitacion: ', adclient.roomtype);
+      imprimir('dias: ', adclient.dias);
+      imprimir;
+    fin;
+  fin;
+  Cerrar(presarch);
+
+  Asignar(presarch, 'Pareja.dat');
+  Resetear(presarch);
+  imprimir('/////Resultados de la búsqueda en Hospedajes en Pareja\\\\\');
+  mientras no Ede(presarch) hacer
+  inicio
+    leer(presarch, adclient);
+    Si adclient.id[1] = idBuscar entonces
+    inicio
+      imprimir('Cedula: ', adclient.id[1]);
+      imprimir('Nombre Completo: ', adclient.clname[1]);
+      imprimir('Email: ', adclient.correo[1]);
+      imprimir('Numero Telefonico: ', adclient.tlf[1]);
+      imprimir('Numero de Habitacion: ', adclient.roomnum);
+      imprimir('Tipo de Habitacion: ', adclient.roomtype);
+      imprimir('dias: ', adclient.dias);
+      imprimir;
+    fin;
+  fin;
+  Cerrar(presarch);
+
+  Asignar(presarch, 'Grupo.dat');
+  Resetear(presarch);
+  imprimir('/////Resultados de la búsqueda en Hospedajes Grupo\\\\\');
+  mientras no Ede(presarch) hacer
+  inicio
+    leer(presarch, adclient);
+    Si adclient.id[1] = idBuscar entonces
+    inicio
+      imprimir('Cedula: ', adclient.id[1]);
+      imprimir('Nombre completo: ', adclient.clname[1]);
+      imprimir('Email: ', adclient.correo[1]);
+      imprimir('Telefono: ', adclient.tlf[1]);
+      imprimir('Numero de Habitacion: ', adclient.roomnum);
+      imprimir('Tipo de Habitacion: ', adclient.roomtype);
+      imprimir('dias: ', adclient.dias);
+      imprimir;
+    fin;
+  fin;
+  Cerrar(presarch);
+
+  leer;
+fin;
+
+procedimiento FacturarPorid(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+variables
+  i, j, x: enteros;
+  id: cadena;
+  encontrado: Boleano;
+  presarch: info;
+  cliente: clientinf;
+inicio
+ Si IOresult = 0 entonces
+ inicio
+    Cerrar(padinfo);
+    Cerrar(iadinfo);
+    Cerrar(acadinfo);
+ fin;
+  limpiar pantalla;
+  imprimir('/////Facturacion por Cedula\\\\\');
+  imprimir('Ingrese el número de cedula: ');
+  leer(id);
+
+ 
+  Asignar(presarch, 'Individual.dat');
+  Resetear(presarch);
+  encontrado := False;
+  mientras no Ede(presarch) hacer
+  inicio
+    leer(presarch, cliente);
+    Si cliente.id[1] = id entonces
+    inicio
+      imprimir('Facturacion para Hospedaje Individual:');
+      imprimir('-----------------------------------');
+      imprimir('Cedula: ', cliente.id[1]);
+      imprimir('Nombre completo: ', cliente.clname[1]);
+      imprimir('Email: ', cliente.correo[1]);
+      imprimir('Numero Telefonico: ', cliente.tlf[1]);
+      imprimir('Numero de habitacion: ', cliente.roomnum);
+      imprimir('Tipo de habitacion: ', cliente.roomtype[1]);
+      imprimir('dias: ', cliente.dias);
+      encontrado := True;
+      Romper;
+    fin;
+  fin;
+  Cerrar(presarch);
+
+  Si no encontrado entonces
+  inicio
+    
+    Asignar(presarch, 'Pareja.dat');
+    Resetear(presarch);
+    encontrado := False;
+    mientras no Ede(presarch) hacer
+    inicio
+      leer(presarch, cliente);
+      Si (cliente.id[1] = id) or (cliente.id[2] = id) entonces
+      inicio
+        imprimir('Facturacion para Hospedaje en Pareja:');
+        imprimir('----------------------------------');
+        imprimir('Primer nombre completo: ', cliente.clname[1]);
+        imprimir('Segunhacer nombre completo: ', cliente.clname[2]);
+        imprimir('Email de ', cliente.clname[1], ': ', cliente.correo[1]);
+        imprimir('Email de ', cliente.clname[2], ': ', cliente.correo[2]);
+        imprimir('Numero Telefonico de ', cliente.clname[1], ': ', cliente.tlf[1]);
+        imprimir('Numero Telefonico de ', cliente.clname[2], ': ', cliente.tlf[2]);
+        imprimir('Numero de cedula de ', cliente.clname[1], ': ', cliente.id[1]);
+        imprimir('Numero de cedula de ', cliente.clname[2], ': ', cliente.id[2]);
+        imprimir('Numero de habitacion: ', cliente.roomnum);
+        imprimir('Tipo de habitacion: ', cliente.roomtype[1]);
+        imprimir('dias: ', cliente.dias);
+        encontrado := True;
+        Romper;
+      fin;
+    fin;
+    Cerrar(presarch);
+  fin;
+
+  Si no encontrado entonces
+  inicio
+    
+    Asignar(presarch, 'Grupo.dat');
+    Resetear(presarch);
+    encontrado := False;
+    mientras no Eof(presarch) hacer
+    inicio
+      leer(presarch, cliente);
+      para i := 1 hasta adclient.adultcant hacer
+      inicio
+        Si cliente.id[i] = id entonces
+        inicio
+          imprimir('Facturación para Cliente Grupo:');
+          imprimir('-----------------------------------');
+          imprimir('Cantidad de adulhastas: ', cliente.adultcant);
+          para j := 1 hasta adclient.adultcant hacer
+          inicio
+            imprimir('Adulhasta ', i);
+            imprimir('Cedula: ', cliente.id[i]);
+            imprimir('Nombre completo: ', cliente.clname[i]);
+            imprimir('Email: ', cliente.correo[i]);
+            imprimir('Numero Telefonico: ', cliente.tlf[i]);
+            imprimir('------------------------');
+          fin;
+          imprimir('Cantidad de ninos: ', cliente.ninoscant);
+          para x := 1 hasta cliente.ninoscant hacer
+          inicio
+            imprimir('Nino ', i);
+            imprimir('Nombre completo: ', cliente.ninos[i]);
+            imprimir('Edad: ', cliente.edad[i]);
+            imprimir('------------------------');
+          fin;
+          imprimir('Numero de habitacion: ', cliente.roomnum);
+          imprimir('Tipo de habitacion: ', cliente.roomtype[1]);
+          imprimir('dias: ', cliente.dias);
+          encontrado := True;
+          Romper;
+        fin;
+      fin;
+      Si encontrado entonces
+        Romper;
+    fin;
+    Cerrar(presarch);
+  fin;
+
+  Si no encontrado entonces
+    imprimir('No se encontro ningun cliente con el número de cedula proporcionado.');
+
+  leer;
+fin;
+
+procedimiento menu(variables padinfo: info; variables iadinfo: info; variables acadinfo: info);
+variables
+  opcion: caracter;
+inicio
+  repetir
+    limpiar pantalla;
+    imprimir('/////Menu Principal\\\\\');
+    imprimir('1. Agregar inparamacion');
+    imprimir('2. Mostrar inparamacion');
+    imprimir('3. Buscar inparamacion');
+    imprimir('4. Facturar');
+    imprimir('0. Salir');
+    imprimir('--------------------------');
+    imprimir('Seleccione una opcion: ');
+    opcion := leerKey;
+    imprimir(opcion);
+    caso opcion de
+      '1':inicio
+      agregarinfo(padinfo, iadinfo, acadinfo);
+      inicarch(padinfo, iadinfo, acadinfo);
+        fin;
+      '2':inicio
+        mostrarinfo(padinfo, iadinfo, acadinfo);
+        inicarch(padinfo, iadinfo, acadinfo);
+        fin;
+      '3': 
+      inicio
+
+      buscarinfo(padinfo, iadinfo, acadinfo);
+      inicarch(padinfo, iadinfo, acadinfo);
+      fin;
+      '4': inicio
+          FacturarPorid(padinfo, iadinfo, acadinfo);
+          inicarch(padinfo, iadinfo, acadinfo);
+      fin;
+    fin;
+  hasta opcion = '0';
+fin;
+
+inicio
+  inicarch(padinfo, iadinfo, acadinfo);
+  menu(padinfo, iadinfo, acadinfo);
+fin.
