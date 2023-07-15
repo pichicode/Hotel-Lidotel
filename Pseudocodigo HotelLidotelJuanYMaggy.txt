@@ -1,4 +1,4 @@
-programa HotelLihacertelJuanYMaggy;
+programa HotelLidotelJuanYMaggy;
 
 usa
   SysUtils, Crt;
